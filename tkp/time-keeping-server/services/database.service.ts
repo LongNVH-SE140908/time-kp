@@ -9,7 +9,7 @@ export async function connectToDatabase() {
   const client: mongoDB.MongoClient = new mongoDB.MongoClient(
     "mongodb://admin:000000Long@jinnie.shop"
   );
-
+  
   await client.connect();
 
   const db: mongoDB.Db = client.db("swd");

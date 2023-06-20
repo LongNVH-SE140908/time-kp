@@ -22,6 +22,8 @@ export default class User {
     preferred_language?: string,
     newsletter_subscription?: boolean,
     role?: string,
-    public id?: ObjectId
+    public id?: ObjectId,
+     public token?:string,
+    public exptokendate?:Date,
   ) {}
 }
