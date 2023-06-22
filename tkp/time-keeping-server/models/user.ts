@@ -1,7 +1,7 @@
 import { ObjectId } from "mongodb";
 export default class User {
   constructor(
-    username?: string,
+    public username?: string,
     email?: string,
     public password?: string,
     first_name?: string,
@@ -21,9 +21,9 @@ export default class User {
     loyalty_points?: number,
     preferred_language?: string,
     newsletter_subscription?: boolean,
-    role?: string,
+    public role?: string,
     public id?: ObjectId,
-    public token?:string,
-    public exptokendate?:Date,
+    public token?: string,
+    public exptokendate?: Date
   ) {}
 }
