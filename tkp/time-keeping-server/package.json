@@ -15,6 +15,7 @@
     "jsonwebtoken": "^9.0.0",
     "linq": "^4.0.1",
     "linq-to-typescript": "^11.0.0",
+    "md5": "^2.3.0",
     "mongodb": "^5.6.0",
     "ts-node": "^10.9.1",
     "typeorm": "^0.3.16"

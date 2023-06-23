@@ -5,4 +5,11 @@ export default class ReturnOj {
     this.isError = isError;
     this.message = message;
   }
+
+}
+export class ResPonses {
+  isError?: boolean;
+  message?: string;
+  data?: any;
+  public constructor(init: Partial<ResPonses>) { Object.assign(this, init); }
 }

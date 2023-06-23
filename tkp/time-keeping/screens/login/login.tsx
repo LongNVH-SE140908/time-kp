@@ -21,41 +21,68 @@ import {
 // Icon
 
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 // state
-import { useSetRecoilState } from "recoil";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import getWeather from "../../api/user/userapi";
 import checkLoginUser from "../../api/user/userapi";
 import ReqUser from "../../api/types/CallPropsUser";
 import { userAppState } from "../../store/user/user";
+import { ResPonses } from "../../models/ultis";
+import User from "../../models/user";
 // state user data
 
 export default function login({ navigation }: any) {
 
   const [tostVisible, setToastVisible] = useState(false);
   const [tostVisibleSuccess, setToastVisibleSuccess] = useState(false);
-
+  const [tostVisibleError, setToastVisibleError] = useState(false);
   const [loginLoad, setLoginLoad] = React.useState(false);
-  const setAppUser = useSetRecoilState(userAppState)
+const [userN, setUserN] = React.useState("");
+const [pass, setPass] = React.useState("");
+  const handleChangeUser = (text: React.SetStateAction<string>) => setUserN(text);
+  const handleChangePass = (textp: React.SetStateAction<string>) => setPass(textp);
+  const [messageError,setMessageError] = React.useState("");
+  const [AppUser, setAppUser] = useRecoilState(userAppState)
+  const userAppData = useRecoilValue(userAppState);
+ 
   //handle login
+  
   async function onSubmit() {
     setLoginLoad(true);
-    var args: ReqUser = {
-      userName: "admin1",
-      passWord: "hashed_password"
-    }
-    await checkLoginUser(args).then((response: any) => {
-      console.log(response);
-      setAppUser(response);
-      if (response.role == "admin") {
-        setToastVisibleSuccess(true);
-        setTimeout(() => {
-          setToastVisibleSuccess(false);
-        }, 2000);
-        navigation.navigate('Auth');
+    
 
+    console.log(userAppData);
+    
+    var args: ReqUser = {
+      userName:userN,
+      passWord: pass
+    }
+    await checkLoginUser(args).then(({response}: any) => {
+      let data;
+      if(response){
+        data = response;
       }
+      
+      if(data.isError){
+        setLoginLoad(false);
+        setMessageError(data.message)
+        setToastVisibleError(true);
+        setTimeout(() => {
+          setToastVisibleError(false);
+        }, 2000);
+      }else{
+        setAppUser(data.data);
+        if (data.data.role == "employee" ) {
+          setToastVisibleSuccess(true);
+          setTimeout(() => {
+            setToastVisibleSuccess(false);
+          }, 2000);
+          navigation.navigate('Auth');
+        }
+      }
+      
 
     });
 
@@ -77,11 +104,11 @@ export default function login({ navigation }: any) {
       <FormControl style={{ flex: 1, justifyContent: "center" }} isRequired>
         <Stack mx="4">
           <FormControl.Label>UserName</FormControl.Label>
-          <Input type="text" placeholder="Enter UserName " />
+          <Input value={userN} onChangeText={handleChangeUser} type="text" placeholder="Enter UserName " />
         </Stack>
         <Stack mx="4">
           <FormControl.Label>Password</FormControl.Label>
-          <Input type="password" placeholder="Enter Password" />
+          <Input value={pass} onChangeText={handleChangePass} type="password" placeholder="Enter Password" />
           <FormControl.HelperText>Must be atleast 6 characters.</FormControl.HelperText>
           <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
             Atleast 6 characters are required.
@@ -114,10 +141,7 @@ export default function login({ navigation }: any) {
         </Stack>
       </FormControl>
 
-      <View style={styles.boxVersion}>
-        <Text style={styles.textVersion}>Version 0.0.1</Text>
-      </View>
-
+    
       {/* tost */}
       <Slide in={tostVisible} style={{ alignItems: "center" }}>
         <Center style={styles.tostBox}>
@@ -173,7 +197,32 @@ export default function login({ navigation }: any) {
           </Stack>
         </Center>
       </Slide>
-
+      <Slide in={tostVisibleError} style={{ alignItems: "center" }}>
+        <Center style={styles.tostBox}>
+          <Stack space={3} w="90%" maxW="400">
+            <Alert w="100%" status="error">
+              <VStack space={2} flexShrink={1} w="100%">
+                <HStack flexShrink={1} space={2} justifyContent="space-between">
+                  <Center>
+                    <HStack space={2} flexShrink={1}>
+                      <Alert.Icon />
+                      <Text >
+                        {messageError}
+                      </Text>
+                    </HStack>
+                  </Center>
+                  <IconButton
+                    onPress={() => setToastVisible(false)}
+                    style={{ marginRight: 8 }}
+                    variant="unstyled"
+                    icon={<CloseIcon size="3" color="coolGray.600" />}
+                  />
+                </HStack>
+              </VStack>
+            </Alert>
+          </Stack>
+        </Center>
+      </Slide>
     </View>
   );
 }

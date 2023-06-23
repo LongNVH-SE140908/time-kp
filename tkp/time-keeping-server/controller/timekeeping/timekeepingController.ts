@@ -2,16 +2,11 @@ import { ClockTime, Detail, Info, TimeKeeping } from "../../models/timekeeping";
 import ReturnOj from "../../models/utils";
 import Enumerable from "linq";
 import { collections } from "../../services/database.service";
-export default async function getTimeKeeping(userName: string) {
-  let ts = Date.now();
-
-  let date_ob: Date = new Date(ts);
-  // lay danh sach cham cong 3 thang gan day
-  let year = date_ob.getFullYear();
-  let month = (date_ob.getMonth() + 1 - 3).toString().padStart(2, "0");
-  let day = 1;
-
-  return null;
+export default async function getTimeKeeping(userName: string, role: string) {
+  let timekeeping: TimeKeeping[] = (await collections.timekeeping?.find({
+    user_name: userName
+  }).toArray()) as unknown as TimeKeeping[];
+  return timekeeping;
 }
 export async function timeKeepingCheckin(
   userName?: string,
@@ -110,7 +105,7 @@ export async function timeKeepingCheckin(
         .catch((ms) => {
           console.log(ms);
         });
-      new ReturnOj(false, "Checkin Success");
+      return new ReturnOj(false, "Checkin Success");
     } else {
       // da check in roi
       var timecheckintoday = timekeeping.clock_time
@@ -121,7 +116,7 @@ export async function timeKeepingCheckin(
           timecheckintoday?.check_in != undefined) ||
         timecheckintoday?.time_name == time_name
       ) {
-        new ReturnOj(true, "Adreadly Checkin");
+        return new ReturnOj(true, "Adreadly Checkin");
       } else {
         timekeeping.clock_time
           .find((x) => new Date(x.date).getTime() == new Date(ymd).getTime())
@@ -141,15 +136,15 @@ export async function timeKeepingCheckin(
             { user_name: userName },
             { $set: { clock_time: timekeeping.clock_time } }
           )
+
           .catch((ms) => {
             console.log(ms);
           });
-        new ReturnOj(false, "Checkin in Success");
+        return new ReturnOj(false, "Checkin in Success");
       }
     }
-
     return new ReturnOj(true, "undetect error");
-  } catch (error) {
+  } catch (error: any) {
     console.log(error);
     throw new Error(error);
   }
@@ -159,6 +154,8 @@ export async function timeKeepingCheckOut(
   role?: string
 ): Promise<ReturnOj> {
   try {
+    var isError = true;
+    var message = "Eror CheckOut"
     let ts = Date.now();
     let date_now: Date = new Date(ts);
     const year = date_now.getFullYear();
@@ -168,7 +165,6 @@ export async function timeKeepingCheckOut(
     let hour = date_now.getHours();
     let ymd = year + "-" + month + "-" + day;
     let time_name = "";
-    let rate = "";
     if (role == "employee") {
       if (0 <= hour && hour < 6) {
         time_name = "0-6";
@@ -198,9 +194,11 @@ export async function timeKeepingCheckOut(
     })) as unknown as TimeKeeping;
 
     //check xem co check out duoc khong
-    let temptimekeeping;
     timekeeping.clock_time.forEach((value, index) => {
-      if (new Date(value.date).getTime() == new Date(date_now).getTime()) {
+
+
+
+      if (new Date(value.date).getTime() == new Date(ymd).getTime()) {
         //co cham cong hom nay roi
         // check xem check in co giong voi checkout khong
 
@@ -208,16 +206,19 @@ export async function timeKeepingCheckOut(
           if (v.time_name == time_name) {
             // check xem da checkin chua
             if (v.check_out != "") {
-              return new ReturnOj(true, "adready checkout");
+              isError = true;
+              message = "Adready Checkout"
+
             } else {
               let tempdetail = timekeeping.clock_time[index].info.detail[i];
               tempdetail.check_out = date_now.toISOString();
               tempdetail.total_minute = new Date(
                 new Date(tempdetail.check_out).getTime() -
-                  new Date(tempdetail.check_in).getTime()
+                new Date(tempdetail.check_in).getTime()
               ).getMinutes();
               timekeeping.clock_time[index].info.detail[i] = tempdetail;
-
+              isError = false;
+              message = "Checkout Success"
               await collections.timekeeping
                 ?.updateOne(
                   { user_name: userName },
@@ -226,18 +227,17 @@ export async function timeKeepingCheckOut(
                 .catch((ms) => {
                   console.log(ms);
                 });
+
             }
           }
         });
-        return new ReturnOj(true, "not found checkin");
       } else {
         // khong co cham cong hom nay ma da check out
-        return new ReturnOj(true, "not found checkin");
       }
     });
 
-    return new ReturnOj(true, "undetect error");
-  } catch (error) {
+    return new ReturnOj(isError, message);
+  } catch (error: any) {
     console.log(error);
 
     throw error;

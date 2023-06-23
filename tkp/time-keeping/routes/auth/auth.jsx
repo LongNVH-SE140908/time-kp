@@ -12,6 +12,7 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import { useRecoilState } from "recoil";
 import home from "../../screens/home/home";
+import { Center } from "native-base";
 
 export default function auth() {
   return (
@@ -35,7 +36,8 @@ export default function auth() {
         })}
       >
         <Tab.Screen name="Home" component={home} />
-        <Tab.Screen name="Settings" component={home} />
+
+        <Tab.Screen name="Info" component={home} />
       </Tab.Navigator>
     </View>
   );
