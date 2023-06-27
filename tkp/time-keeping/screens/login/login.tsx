@@ -28,7 +28,7 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
 import getWeather from "../../api/user/userapi";
 import checkLoginUser from "../../api/user/userapi";
 import ReqUser from "../../api/types/CallPropsUser";
-import { userAppState } from "../../store/user/user";
+import { textState } from "../../store/user/user";
 import { ResPonses } from "../../models/ultis";
 import User from "../../models/user";
 // state user data
@@ -44,16 +44,29 @@ const [pass, setPass] = React.useState("");
   const handleChangeUser = (text: React.SetStateAction<string>) => setUserN(text);
   const handleChangePass = (textp: React.SetStateAction<string>) => setPass(textp);
   const [messageError,setMessageError] = React.useState("");
-  const [AppUser, setAppUser] = useRecoilState(userAppState)
-  const userAppData = useRecoilValue(userAppState);
+  const setUserApp = useSetRecoilState(textState)
+  
  
   //handle login
-  
+  useEffect(()=>{
+    var data = localStorage.getItem("userData")?.toString();
+      var temp = JSON.parse(data||"");
+      if(new Date(Date.now()).getTime()<= new Date(temp.exptokendate).getTime() ){
+        if (temp.role == "employee" ||temp.role == "guard" ) {
+          setToastVisibleSuccess(true);
+          setTimeout(() => {
+            setToastVisibleSuccess(false);
+          }, 2000);
+          navigation.navigate('Auth');
+        }
+        
+      }
+  },[1])
   async function onSubmit() {
     setLoginLoad(true);
     
 
-    console.log(userAppData);
+    
     
     var args: ReqUser = {
       userName:userN,
@@ -73,8 +86,11 @@ const [pass, setPass] = React.useState("");
           setToastVisibleError(false);
         }, 2000);
       }else{
-        setAppUser(data.data);
-        if (data.data.role == "employee" ) {
+        
+        
+        setUserApp(data.data);
+        localStorage.setItem("userData",JSON.stringify(data.data));
+        if (data.data.role == "employee" ||data.data.role == "guard" ) {
           setToastVisibleSuccess(true);
           setTimeout(() => {
             setToastVisibleSuccess(false);
