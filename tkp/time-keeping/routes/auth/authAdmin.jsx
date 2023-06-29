@@ -6,87 +6,49 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 const Tab = createBottomTabNavigator();
 //Screen
 import Home from "../../screens/home/home";
-
+import Ionicons from "react-native-vector-icons/Ionicons";
 //icons
 
 import { useRecoilState } from "recoil";
+import homeAdmin from "../../screens/home/homeAdmin";
+import { Text, useToast } from "native-base";
 
-export default function auth() {
+export default function authAdmin() {
+  const toast = useToast();
+  function logout() {
+    localStorage.removeItem("userData");
+    navigation.navigate("Login");
+    toast.show({
+      title: "Logout Sucess",
+      status: "success",
+    });
+  }
   return (
     <View style={{ flex: 1, position: "relative" }}>
+      <Text onPress={logout} style={{ position: "absolute", right: "0", marginTop: 20, marginRight: 20, top: "10", zIndex: "1" }}>
+        Log out
+      </Text>
       <Tab.Navigator
         screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused }) => {
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+            console.log(route.name);
             if (route.name === "Home") {
-              return (
-                <Image
-                  style={{ width: 24, height: 24 }}
-                  source={focused ? "https://icons8.com/icon/86527/home" : "https://icons8.com/icon/83326/home"}
-                />
-              );
-            } else if (route.name === "Book") {
-              return (
-                <Image
-                  style={{ width: 24, height: 24 }}
-                  source={
-                    focused
-                      ? "https://icons8.com/icon/4Z7EBZWE96y9/open-book"
-                      : "https://icons8.com/icon/x25hsQceGEys/open-book"
-                  }
-                />
-              );
-            } else if (route.name === "User") {
-              return (
-                <Image
-                  style={{ width: 24, height: 24 }}
-                  source={focused ? "https://icons8.com/icon/DvG9sokSVTRZ/user" : "https://icons8.com/icon/22396/user"}
-                />
-              );
+              iconName = focused ? "ios-information-circle" : "ios-information-circle-outline";
+            } else if (route.name === "Info") {
+              iconName = focused ? "ios-list" : "ios-list-outline";
             }
+
+            // You can return any component that you like here!
+            return <Ionicons name={iconName} size={size} color={color} />;
           },
-          tabBarLabel: () => {
-            return null;
-          },
-          tabBarStyle: styles.tab,
-          headerShown: false,
+          tabBarActiveTintColor: "tomato",
+          tabBarInactiveTintColor: "gray",
         })}
       >
-        <Tab.Screen
-          name="Home"
-          component={Home}
-          listeners={{
-            tabPress: (e) => {
-              // Prevent default action
-            },
-          }}
-        />
-        <Tab.Screen
-          name="Book"
-          component={Book}
-          listeners={{
-            tabPress: (e) => {
-              // Prevent default action
-            },
-          }}
-        />
-        <Tab.Screen
-          name="Bag"
-          component={Bag}
-          listeners={{
-            tabPress: (e) => {
-              // Prevent default action
-            },
-          }}
-        />
-        <Tab.Screen
-          name="User"
-          component={User}
-          listeners={{
-            tabPress: (e) => {
-              // Prevent default action
-            },
-          }}
-        />
+        <Tab.Screen name="Home" component={homeAdmin} />
+
+        <Tab.Screen name="Info" component={homeAdmin} />
       </Tab.Navigator>
     </View>
   );

@@ -12,19 +12,31 @@ import { NavigationContainer } from "@react-navigation/native";
 
 import { useRecoilState } from "recoil";
 import home from "../../screens/home/home";
-import { Center } from "native-base";
+import { Button, Center, Text, Toast, useToast } from "native-base";
 
 export default function auth() {
+  const toast = useToast();
+  function logout() {
+    localStorage.removeItem("userData");
+    navigation.navigate("Login");
+    toast.show({
+      title: "Logout Sucess",
+      status: "success",
+    });
+  }
   return (
     <View style={{ flex: 1, position: "relative" }}>
+      <Text onPress={logout} style={{ position: "absolute", right: "0", marginTop: 20, marginRight: 20, top: "10", zIndex: "1" }}>
+        Log out
+      </Text>
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
-
+            console.log(route.name);
             if (route.name === "Home") {
               iconName = focused ? "ios-information-circle" : "ios-information-circle-outline";
-            } else if (route.name === "Settings") {
+            } else if (route.name === "Info") {
               iconName = focused ? "ios-list" : "ios-list-outline";
             }
 

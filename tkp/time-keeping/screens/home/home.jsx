@@ -1,21 +1,15 @@
-import { Center, Text, Container, Heading, Button, Slide, Stack, Alert, VStack, HStack, IconButton, CloseIcon } from "native-base";
+import { Center, Text, Container, Heading, Button, Slide, Stack, Alert, VStack, HStack, IconButton, CloseIcon, useToast, Divider, Box, Accordion, useDisclose, FlatList, Actionsheet, Select } from "native-base";
 import { StyleSheet, View, Image, Dimensions } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { textState, userAppState } from "../../store/user/user";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { TouchableHighlight } from "react-native-gesture-handler";
-import getUserTimekeeping, { checkinTimekeeping } from "../../api/timekeeping/timekeepingapi";
-
-import { TimeKeeping } from "../../models/timekeeping";
+import getUserTimekeeping, { checkOutTimekeeping, checkinTimekeeping } from "../../api/timekeeping/timekeepingapi";
 export default function home() {
-  const userApp = useRecoilValue(textState);
-  const [tostVisibleSuccess, setToastVisibleSuccess] = useState(false);
-  const [tostVisibleError, setToastVisibleError] = useState(false);
-
-  const [messageError, setMessageError] = React.useState("");
-  const [messageSuccess, setMessageSuccess] = React.useState("");
-
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclose();
+  const [isCheckin, setIsCheckin] = React.useState(false);
+  const [isDone, setisDone] = React.useState(false);
+  const [currentDate, setCurrentDate] = useState("");
+  const [acctionSetItem, setAcctionSetItem] = useState([]);
   var data = localStorage.getItem("userData")?.toString();
   var user = JSON.parse(data || "");
 
@@ -29,77 +23,131 @@ export default function home() {
       }
     }
     fetchData();
-  }, [2]);
+  }, [isDone]);
   function getName() {
     var name = "";
     timekp.clock_time.map((i, v) => {
       console.log(v);
     });
   }
+
   async function checkin() {
-    console.log(timekp);
+    console.log(timekp.clock_time);
     var data = await checkinTimekeeping(user.token);
     if (!data.isError) {
-      setMessageSuccess(data.message);
-      setToastVisibleSuccess(true);
+      setisDone(!isDone);
+      toast.show({
+        title: data.message,
+        status: "success",
+      });
     } else {
-      setMessageError(data.message);
-      setToastVisibleError(true);
+      toast.show({
+        title: data.message,
+        status: "warning",
+      });
     }
+  }
+  async function checkout() {
+    var data = await checkOutTimekeeping(user.token);
+    if (!data.isError) {
+      setisDone(!isDone);
+      toast.show({
+        title: data.message,
+        status: "success",
+      });
+    } else {
+      toast.show({
+        title: data.message,
+        status: "warning",
+      });
+    }
+  }
+  useEffect(() => {
+    var date = new Date().getDate(); //Current Date
+    var month = new Date().getMonth() + 1; //Current Month
+    var year = new Date().getFullYear(); //Current Year
+    var hours = new Date().getHours(); //Current Hours
+    var min = new Date().getMinutes(); //Current Minutes
+    var sec = new Date().getSeconds(); //Current Seconds
+    setCurrentDate(date + "/" + month + "/" + year + " " + hours + ":" + min + ":" + sec);
+
+    const intervalId = setInterval(
+      () => {
+        var date = new Date().getDate(); //Current Date
+        var month = new Date().getMonth() + 1; //Current Month
+        var year = new Date().getFullYear(); //Current Year
+        var hours = new Date().getHours(); //Current Hours
+        var min = new Date().getMinutes(); //Current Minutes
+        var sec = new Date().getSeconds(); //Current Seconds
+        setCurrentDate(date + "/" + month + "/" + year + " " + hours + ":" + min + ":" + sec);
+      },
+      60000,
+      true
+    );
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+  async function rederItem(data) {
+    await setAcctionSetItem(data);
+    onOpen();
   }
   return (
     <View style={styles.container}>
-      <Center>
-        <Container>
-          <Heading>
-            <Button onPress={checkin} size="sm">
-              {() => "123123"}
-            </Button>
-          </Heading>
-          <Text mt="3" fontWeight="medium">
-            NativeBase is a simple, modular and accessible component library that gives you building blocks to build you React applications.
-          </Text>
-        </Container>
-      </Center>
+      <Box>
+        <Heading>
+          <Ionicons size="xl" name="calendar-outline"></Ionicons>
+          <Text style={{ width: 500 }}>{currentDate}</Text>
+          <Divider my={6} />
+          <Center>
+            <View style={{ minWidth: 350, display: "flex", flexDirection: "column" }}>
+              <Button style={{ marginBottom: 10 }} onPress={checkin} size="md">
+                Checkin
+              </Button>
+              <Button onPress={checkout} size="md">
+                Checkout
+              </Button>
+            </View>
+          </Center>
+          <Divider my="6"></Divider>
+          <Text style={{ display: "flex", marginBottom: 10 }}>TimeKeeping History </Text>
+          {timekp.clock_time?.map((v, i) => {
+            {
+              return (
+                <View style={{ display: "flex", flexDirection: "column", marginBottom: 10 }} key={i}>
+                  <Button onPress={() => rederItem(v.info.detail)}>{v.date}</Button>
+                  <Actionsheet key={i} hideDragIndicator id={i} isOpen={isOpen} onClose={onClose}>
+                    <Actionsheet.Content>
+                      <Box w="100%" h={30} px={4} justifyContent="center">
+                        <Text
+                          fontSize="16"
+                          color="gray.500"
+                          _dark={{
+                            color: "gray.300",
+                          }}
+                        >
+                          {"Date " + v.date}
+                        </Text>
+                      </Box>
 
-      <Slide in={tostVisibleSuccess} style={{ alignItems: "center" }}>
-        <Center style={styles.tostBox}>
-          <Stack space={3} w="90%" maxW="400">
-            <Alert w="100%" status="success">
-              <VStack space={2} flexShrink={1} w="100%">
-                <HStack flexShrink={1} space={2} justifyContent="space-between">
-                  <Center>
-                    <HStack space={2} flexShrink={1}>
-                      <Alert.Icon />
-                      <Text>{messageSuccess}</Text>
-                    </HStack>
-                  </Center>
-                  <IconButton onPress={() => setToastVisibleSuccess(false)} style={{ marginRight: 8 }} variant="unstyled" icon={<CloseIcon size="3" color="coolGray.600" />} />
-                </HStack>
-              </VStack>
-            </Alert>
-          </Stack>
-        </Center>
-      </Slide>
-      <Slide in={tostVisibleError} style={{ alignItems: "center" }}>
-        <Center style={styles.tostBox}>
-          <Stack space={3} w="90%" maxW="400">
-            <Alert w="100%" status="error">
-              <VStack space={2} flexShrink={1} w="100%">
-                <HStack flexShrink={1} space={2} justifyContent="space-between">
-                  <Center>
-                    <HStack space={2} flexShrink={1}>
-                      <Alert.Icon />
-                      <Text>{messageError}</Text>
-                    </HStack>
-                  </Center>
-                  <IconButton onPress={() => setToastVisibleError(false)} style={{ marginRight: 8 }} variant="unstyled" icon={<CloseIcon size="3" color="coolGray.600" />} />
-                </HStack>
-              </VStack>
-            </Alert>
-          </Stack>
-        </Center>
-      </Slide>
+                      {acctionSetItem?.map((va, it) => {
+                        return (
+                          <Actionsheet.Item>
+                            <Text style={{ width: "100%" }}>
+                              {new Date(va.check_in).toLocaleTimeString()} - {va.check_out == "" ?? new Date(va.check_out).toLocaleTimeString() == "" ? "No data" : new Date(va.check_out).toLocaleTimeString()} - Total Minute:{" "}
+                              {va.isValid ? va.total_minute + " (Valid)" : va.total_minute + " (Not Valid)"}
+                            </Text>
+                          </Actionsheet.Item>
+                        );
+                      })}
+                    </Actionsheet.Content>
+                  </Actionsheet>
+                </View>
+              );
+            }
+          })}
+        </Heading>
+      </Box>
     </View>
   );
 }

@@ -7,7 +7,7 @@ export const collections: {
 } = {};
 export async function connectToDatabase() {
   const client: mongoDB.MongoClient = new mongoDB.MongoClient(
-    "mongodb://admin:000000Long@27.64.211.48"
+    "mongodb://admin:000000Long@jinnie.shop"
   );
 
   await client.connect();

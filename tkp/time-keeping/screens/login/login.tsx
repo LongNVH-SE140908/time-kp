@@ -17,6 +17,8 @@ import {
   Input,
   WarningOutlineIcon,
   Button,
+  useToast,
+  IToastProps
 } from "native-base";
 // Icon
 
@@ -39,66 +41,82 @@ export default function login({ navigation }: any) {
   const [tostVisibleSuccess, setToastVisibleSuccess] = useState(false);
   const [tostVisibleError, setToastVisibleError] = useState(false);
   const [loginLoad, setLoginLoad] = React.useState(false);
-const [userN, setUserN] = React.useState("");
-const [pass, setPass] = React.useState("");
+  const [userN, setUserN] = React.useState("");
+  const [pass, setPass] = React.useState("");
   const handleChangeUser = (text: React.SetStateAction<string>) => setUserN(text);
   const handleChangePass = (textp: React.SetStateAction<string>) => setPass(textp);
-  const [messageError,setMessageError] = React.useState("");
+  const [messageError, setMessageError] = React.useState("");
   const setUserApp = useSetRecoilState(textState)
-  
- 
+
+  const toast = useToast();
   //handle login
-  useEffect(()=>{
+  useEffect(() => {
     var data = localStorage.getItem("userData")?.toString();
-      var temp = JSON.parse(data||"");
-      if(new Date(Date.now()).getTime()<= new Date(temp.exptokendate).getTime() ){
-        if (temp.role == "employee" ||temp.role == "guard" ) {
+    if (!data) {
+
+    } else {
+      var temp = JSON.parse(data || "");
+      if (new Date(Date.now()).getTime() <= new Date(temp.exptokendate).getTime()) {
+        if (temp.role == "employee" || temp.role == "guard") {
           setToastVisibleSuccess(true);
           setTimeout(() => {
             setToastVisibleSuccess(false);
           }, 2000);
           navigation.navigate('Auth');
+        } else if (temp.role == "admin") {
+          navigation.navigate('AuthAdmin');
+          var datas: IToastProps = {
+            title: "Login Success",
+          }
+          toast.show(datas);
         }
-        
+
       }
-  },[1])
+    }
+  }, [])
   async function onSubmit() {
     setLoginLoad(true);
-    
 
-    
-    
+
+
+
     var args: ReqUser = {
-      userName:userN,
+      userName: userN,
       passWord: pass
     }
-    await checkLoginUser(args).then(({response}: any) => {
+    await checkLoginUser(args).then(({ response }: any) => {
       let data;
-      if(response){
+      if (response) {
         data = response;
       }
-      
-      if(data.isError){
+
+      if (data.isError) {
         setLoginLoad(false);
         setMessageError(data.message)
         setToastVisibleError(true);
         setTimeout(() => {
           setToastVisibleError(false);
         }, 2000);
-      }else{
-        
-        
+      } else {
+
+
         setUserApp(data.data);
-        localStorage.setItem("userData",JSON.stringify(data.data));
-        if (data.data.role == "employee" ||data.data.role == "guard" ) {
+        localStorage.setItem("userData", JSON.stringify(data.data));
+        if (data.data.role == "employee" || data.data.role == "guard") {
           setToastVisibleSuccess(true);
           setTimeout(() => {
             setToastVisibleSuccess(false);
           }, 2000);
           navigation.navigate('Auth');
+        } else if (data.data.role == "admin") {
+          navigation.navigate('AuthAdmin');
+          var datas: IToastProps = {
+            title: "Login Success",
+          }
+          toast.show(datas);
         }
       }
-      
+
 
     });
 
@@ -157,7 +175,7 @@ const [pass, setPass] = React.useState("");
         </Stack>
       </FormControl>
 
-    
+
       {/* tost */}
       <Slide in={tostVisible} style={{ alignItems: "center" }}>
         <Center style={styles.tostBox}>
