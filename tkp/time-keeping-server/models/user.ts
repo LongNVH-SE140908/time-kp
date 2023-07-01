@@ -24,6 +24,8 @@ export default class User {
     public role?: string,
     public id?: ObjectId,
     public token?: string,
-    public exptokendate?: Date
-  ) {}
+    public exptokendate?: Date,
+    public managerUser?: string,
+    public lstManagerUser?: string[]
+  ) { }
 }
