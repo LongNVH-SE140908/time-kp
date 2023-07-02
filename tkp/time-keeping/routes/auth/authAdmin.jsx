@@ -12,11 +12,13 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useRecoilState } from "recoil";
 import homeAdmin from "../../screens/home/homeAdmin";
 import { Text, useToast } from "native-base";
+import infoAdmin from "../../screens/info/infoAdmin";
 
 export default function authAdmin() {
   const toast = useToast();
   function logout() {
     localStorage.removeItem("userData");
+    localStorage.clear();
     navigation.navigate("Login");
     toast.show({
       title: "Logout Sucess",
@@ -32,7 +34,6 @@ export default function authAdmin() {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
-            console.log(route.name);
             if (route.name === "Home") {
               iconName = focused ? "ios-information-circle" : "ios-information-circle-outline";
             } else if (route.name === "Info") {
@@ -48,7 +49,7 @@ export default function authAdmin() {
       >
         <Tab.Screen name="Home" component={homeAdmin} />
 
-        <Tab.Screen name="Info" component={homeAdmin} />
+        <Tab.Screen name="Info" component={infoAdmin} />
       </Tab.Navigator>
     </View>
   );

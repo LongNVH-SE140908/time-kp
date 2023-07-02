@@ -17,7 +17,7 @@ export default function home() {
   useEffect(() => {
     async function fetchData() {
       var data = await getUserTimekeeping(user.token);
-
+      console.log(data);
       if (!data.isError) {
         setTimekp(data.data[0]);
       }
@@ -111,41 +111,43 @@ export default function home() {
           </Center>
           <Divider my="6"></Divider>
           <Text style={{ display: "flex", marginBottom: 10 }}>TimeKeeping History </Text>
-          {timekp.clock_time?.map((v, i) => {
-            {
-              return (
-                <View style={{ display: "flex", flexDirection: "column", marginBottom: 10 }} key={i}>
-                  <Button onPress={() => rederItem(v.info.detail)}>{v.date}</Button>
-                  <Actionsheet key={i} hideDragIndicator id={i} isOpen={isOpen} onClose={onClose}>
-                    <Actionsheet.Content>
-                      <Box w="100%" h={30} px={4} justifyContent="center">
-                        <Text
-                          fontSize="16"
-                          color="gray.500"
-                          _dark={{
-                            color: "gray.300",
-                          }}
-                        >
-                          {"Date " + v.date}
-                        </Text>
-                      </Box>
-
-                      {acctionSetItem?.map((va, it) => {
-                        return (
-                          <Actionsheet.Item>
-                            <Text style={{ width: "100%" }}>
-                              {new Date(va.check_in).toLocaleTimeString()} - {va.check_out == "" ?? new Date(va.check_out).toLocaleTimeString() == "" ? "No data" : new Date(va.check_out).toLocaleTimeString()} - Total Minute:{" "}
-                              {va.isValid ? va.total_minute + " (Valid)" : va.total_minute + " (Not Valid)"}
+          {Array.isArray(timekp.clock_time)
+            ? timekp.clock_time?.map((v, i) => {
+                {
+                  return (
+                    <View style={{ display: "flex", flexDirection: "column", marginBottom: 10 }} key={i}>
+                      <Button onPress={() => rederItem(v.info.detail)}>{v.date}</Button>
+                      <Actionsheet key={i} hideDragIndicator id={i} isOpen={isOpen} onClose={onClose}>
+                        <Actionsheet.Content>
+                          <Box w="100%" h={30} px={4} justifyContent="center">
+                            <Text
+                              fontSize="16"
+                              color="gray.500"
+                              _dark={{
+                                color: "gray.300",
+                              }}
+                            >
+                              {"Date " + v.date}
                             </Text>
-                          </Actionsheet.Item>
-                        );
-                      })}
-                    </Actionsheet.Content>
-                  </Actionsheet>
-                </View>
-              );
-            }
-          })}
+                          </Box>
+
+                          {acctionSetItem?.map((va, it) => {
+                            return (
+                              <Actionsheet.Item>
+                                <Text style={{ width: "100%" }}>
+                                  {new Date(va.check_in).toLocaleTimeString()} - {va.check_out == "" ?? new Date(va.check_out).toLocaleTimeString() == "" ? "No data" : new Date(va.check_out).toLocaleTimeString()} - Total Minute:{" "}
+                                  {va.isValid ? va.total_minute + " (Valid)" : va.total_minute + " (Not Valid)"}
+                                </Text>
+                              </Actionsheet.Item>
+                            );
+                          })}
+                        </Actionsheet.Content>
+                      </Actionsheet>
+                    </View>
+                  );
+                }
+              })
+            : []}
         </Heading>
       </Box>
     </View>

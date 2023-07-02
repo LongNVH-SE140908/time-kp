@@ -1,27 +1,7 @@
 import { StyleSheet, Text, View, Image } from "react-native";
 // UI
-import {
-  Alert,
-  VStack,
-  HStack,
-  IconButton,
-  CloseIcon,
-  Center,
-  Stack,
-  Slide,
-  Select,
-
-  CheckIcon,
-
-  FormControl,
-  Input,
-  WarningOutlineIcon,
-  Button,
-  useToast,
-  IToastProps
-} from "native-base";
+import { Alert, VStack, HStack, IconButton, CloseIcon, Center, Stack, Slide, Select, CheckIcon, FormControl, Input, WarningOutlineIcon, Button, useToast, IToastProps } from "native-base";
 // Icon
-
 
 import React, { useEffect, useState } from "react";
 
@@ -33,27 +13,63 @@ import ReqUser from "../../api/types/CallPropsUser";
 import { textState } from "../../store/user/user";
 import { ResPonses } from "../../models/ultis";
 import User from "../../models/user";
+
+import { settings } from "firebase/analytics";
+import { app, auth, firebase } from "../../ultis/firebase";
 // state user data
 
-export default function login({ navigation }: any) {
-
+export default function login({ navigation }) {
   const [tostVisible, setToastVisible] = useState(false);
   const [tostVisibleSuccess, setToastVisibleSuccess] = useState(false);
   const [tostVisibleError, setToastVisibleError] = useState(false);
   const [loginLoad, setLoginLoad] = React.useState(false);
   const [userN, setUserN] = React.useState("");
   const [pass, setPass] = React.useState("");
-  const handleChangeUser = (text: React.SetStateAction<string>) => setUserN(text);
-  const handleChangePass = (textp: React.SetStateAction<string>) => setPass(textp);
+  const handleChangeUser = (text) => setUserN(text);
+  const handleChangePass = (textp) => setPass(textp);
   const [messageError, setMessageError] = React.useState("");
-  const setUserApp = useSetRecoilState(textState)
+  const setUserApp = useSetRecoilState(textState);
+
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState("INPUT_PHONE_NUMBER");
+  const [result, setResult] = useState("");
+  const signin = () => {
+    if (phoneNumber === "") return;
+
+    let verify = new app.RecaptchaVerifier("recaptcha-container", {
+      size: "invisible",
+    });
+
+    auth
+      .signInWithPhoneNumber(phoneNumber, verify)
+      .then((result) => {
+        setResult(result);
+        setStep("VERIFY_OTP");
+      })
+      .catch((err) => {
+        alert(err);
+      });
+  };
+
+  const ValidateOtp = () => {
+    if (otp === null) return;
+
+    result
+      .confirm(otp)
+      .then((result) => {
+        setStep("VERIFY_SUCCESS");
+      })
+      .catch((err) => {
+        alert("Incorrect code");
+      });
+  };
 
   const toast = useToast();
   //handle login
   useEffect(() => {
     var data = localStorage.getItem("userData")?.toString();
     if (!data) {
-
     } else {
       var temp = JSON.parse(data || "");
       if (new Date(Date.now()).getTime() <= new Date(temp.exptokendate).getTime()) {
@@ -62,29 +78,25 @@ export default function login({ navigation }: any) {
           setTimeout(() => {
             setToastVisibleSuccess(false);
           }, 2000);
-          navigation.navigate('Auth');
+          navigation.navigate("Auth");
         } else if (temp.role == "admin") {
-          navigation.navigate('AuthAdmin');
-          var datas: IToastProps = {
+          navigation.navigate("AuthAdmin");
+          var datas = {
             title: "Login Success",
-          }
+          };
           toast.show(datas);
         }
-
       }
     }
-  }, [])
+  }, []);
   async function onSubmit() {
     setLoginLoad(true);
 
-
-
-
-    var args: ReqUser = {
+    var args = {
       userName: userN,
-      passWord: pass
-    }
-    await checkLoginUser(args).then(({ response }: any) => {
+      passWord: pass,
+    };
+    await checkLoginUser(args).then(({ response }) => {
       let data;
       if (response) {
         data = response;
@@ -92,14 +104,12 @@ export default function login({ navigation }: any) {
 
       if (data.isError) {
         setLoginLoad(false);
-        setMessageError(data.message)
+        setMessageError(data.message);
         setToastVisibleError(true);
         setTimeout(() => {
           setToastVisibleError(false);
         }, 2000);
       } else {
-
-
         setUserApp(data.data);
         localStorage.setItem("userData", JSON.stringify(data.data));
         if (data.data.role == "employee" || data.data.role == "guard") {
@@ -107,19 +117,16 @@ export default function login({ navigation }: any) {
           setTimeout(() => {
             setToastVisibleSuccess(false);
           }, 2000);
-          navigation.navigate('Auth');
+          navigation.navigate("Auth");
         } else if (data.data.role == "admin") {
-          navigation.navigate('AuthAdmin');
-          var datas: IToastProps = {
+          navigation.navigate("AuthAdmin");
+          var datas = {
             title: "Login Success",
-          }
+          };
           toast.show(datas);
         }
       }
-
-
     });
-
 
     setLoginLoad(false);
   }
@@ -131,7 +138,6 @@ export default function login({ navigation }: any) {
             uri: "https://th.bing.com/th/id/OIG.RO8BPnjwoex8d0yQAObk?pid=ImgGn",
           }}
           alt="Alternate Text"
-
         />
       </Center>
 
@@ -144,29 +150,43 @@ export default function login({ navigation }: any) {
           <FormControl.Label>Password</FormControl.Label>
           <Input value={pass} onChangeText={handleChangePass} type="password" placeholder="Enter Password" />
           <FormControl.HelperText>Must be atleast 6 characters.</FormControl.HelperText>
-          <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-            Atleast 6 characters are required.
-          </FormControl.ErrorMessage>
+          <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>Atleast 6 characters are required.</FormControl.ErrorMessage>
         </Stack>
         <Stack mx="4">
-          <FormControl.Label>Choose service</FormControl.Label>
-          <Select
-            minWidth="200"
-            accessibilityLabel="Choose Service"
-            placeholder="Choose Service"
-            _selectedItem={{
-              bg: "teal.600",
-              endIcon: <CheckIcon size={5} />,
-            }}
-            mt="1"
-          >
-            <Select.Item label="Sale Employee" value="se" />
-            <Select.Item label="Guard Employee" value="ge" />
-            <Select.Item label="Admin" value="ad" />
-          </Select>
-          <FormControl.ErrorMessage leftIcon={<WarningOutlineIcon size="xs" />}>
-            Please make a selection!
-          </FormControl.ErrorMessage>
+          {step === "INPUT_PHONE_NUMBER" && (
+            <div>
+              <input
+                value={phoneNumber}
+                onChange={(e) => {
+                  setPhoneNumber(e.target.value);
+                }}
+                placeholder="phone number"
+              />
+              <br />
+              <br />
+              <div id="recaptcha-container"></div>
+              <button onClick={signin}>Send OTP</button>
+            </div>
+          )}
+
+          {step === "VERIFY_OTP" && (
+            <div>
+              <input
+                type="text"
+                placeholder={"Enter your OTP"}
+                onChange={(e) => {
+                  setOtp(e.target.value);
+                }}
+              />
+              <br />
+              <br />
+              <button onClick={ValidateOtp}>Verify</button>
+            </div>
+          )}
+
+          {step === "VERIFY_SUCCESS" && <h3>Verify success</h3>}
+
+          {step === "VERIFY_FAIL" && <h3>Verify Fail</h3>}
         </Stack>
         <Stack mx={"38%"} paddingTop={"5"}>
           <Button isLoading={loginLoad} isLoadingText="Submitting" onPress={onSubmit}>
@@ -174,7 +194,6 @@ export default function login({ navigation }: any) {
           </Button>
         </Stack>
       </FormControl>
-
 
       {/* tost */}
       <Slide in={tostVisible} style={{ alignItems: "center" }}>
@@ -186,24 +205,16 @@ export default function login({ navigation }: any) {
                   <Center>
                     <HStack space={2} flexShrink={1}>
                       <Alert.Icon />
-                      <Text >
-                        Log in Failed!
-                      </Text>
+                      <Text>Log in Failed!</Text>
                     </HStack>
                   </Center>
-                  <IconButton
-                    onPress={() => setToastVisible(false)}
-                    style={{ marginRight: 8 }}
-                    variant="unstyled"
-                    icon={<CloseIcon size="3" color="coolGray.600" />}
-                  />
+                  <IconButton onPress={() => setToastVisible(false)} style={{ marginRight: 8 }} variant="unstyled" icon={<CloseIcon size="3" color="coolGray.600" />} />
                 </HStack>
               </VStack>
             </Alert>
           </Stack>
         </Center>
       </Slide>
-
 
       <Slide in={tostVisibleSuccess} style={{ alignItems: "center" }}>
         <Center style={styles.tostBox}>
@@ -214,17 +225,10 @@ export default function login({ navigation }: any) {
                   <Center>
                     <HStack space={2} flexShrink={1}>
                       <Alert.Icon />
-                      <Text >
-                        Login Success
-                      </Text>
+                      <Text>Login Success</Text>
                     </HStack>
                   </Center>
-                  <IconButton
-                    onPress={() => setToastVisible(false)}
-                    style={{ marginRight: 8 }}
-                    variant="unstyled"
-                    icon={<CloseIcon size="3" color="coolGray.600" />}
-                  />
+                  <IconButton onPress={() => setToastVisible(false)} style={{ marginRight: 8 }} variant="unstyled" icon={<CloseIcon size="3" color="coolGray.600" />} />
                 </HStack>
               </VStack>
             </Alert>
@@ -240,17 +244,10 @@ export default function login({ navigation }: any) {
                   <Center>
                     <HStack space={2} flexShrink={1}>
                       <Alert.Icon />
-                      <Text >
-                        {messageError}
-                      </Text>
+                      <Text>{messageError}</Text>
                     </HStack>
                   </Center>
-                  <IconButton
-                    onPress={() => setToastVisible(false)}
-                    style={{ marginRight: 8 }}
-                    variant="unstyled"
-                    icon={<CloseIcon size="3" color="coolGray.600" />}
-                  />
+                  <IconButton onPress={() => setToastVisible(false)} style={{ marginRight: 8 }} variant="unstyled" icon={<CloseIcon size="3" color="coolGray.600" />} />
                 </HStack>
               </VStack>
             </Alert>

@@ -13,6 +13,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { useRecoilState } from "recoil";
 import home from "../../screens/home/home";
 import { Button, Center, Text, Toast, useToast } from "native-base";
+import info from "../../screens/info/info";
 
 export default function auth() {
   const toast = useToast();
@@ -49,7 +50,7 @@ export default function auth() {
       >
         <Tab.Screen name="Home" component={home} />
 
-        <Tab.Screen name="Info" component={home} />
+        <Tab.Screen name="Info" component={info} />
       </Tab.Navigator>
     </View>
   );
