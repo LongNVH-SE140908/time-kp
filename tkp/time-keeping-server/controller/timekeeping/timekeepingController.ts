@@ -18,6 +18,32 @@ export async function getAllTimeKeeping(userName: string[]) {
     .toArray()) as unknown as TimeKeeping[];
   return timekeeping;
 }
+
+export async function getAllTimeKeeping(userName: string[]) {
+  let timekeeping: TimeKeeping[] = (await collections.timekeeping?.find({
+    "user_name": { "$in": userName }
+  }).toArray()) as unknown as TimeKeeping[];
+
+  console.log(timekeeping);
+
+  return timekeeping;
+}
+export async function UpdateTimeKeeping(userName: string, newData: TimeKeeping) {
+  console.log(newData.user_name);
+
+  let isSuccess = await collections.timekeeping
+    ?.updateOne(
+      { user_name: userName },
+      { $set: { clock_time: newData.clock_time } }
+    )
+
+    .catch((ms) => {
+      console.log(ms);
+    });
+
+
+  return isSuccess
+}
 export async function timeKeepingCheckin(
   userName?: string,
   role?: string

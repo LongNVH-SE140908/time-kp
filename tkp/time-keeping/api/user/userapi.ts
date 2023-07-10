@@ -23,7 +23,6 @@ export default async function checkLoginUser(args: ReqUser) {
         console.log(error);
       });
   }
-  console.log(result);
 
   return result;
 }
