@@ -1,7 +1,9 @@
 # time-kp
- Project use React Native, MonggoDB, Docker
-Project user for employee and admin
-empolyee can:
+
+## Project use React Native, MonggoDB, Docker
+ 
+## Project user for employee and admin
+ ### empolyee can:
 -login
 -checkin
 -checkout
