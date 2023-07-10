@@ -9,7 +9,7 @@
 - checkout
 - view history checkin
 - view managers
-admin can:
+### admin can:
 - login
 - logout
 - view user list
