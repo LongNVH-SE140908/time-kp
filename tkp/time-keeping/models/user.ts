@@ -1,9 +1,8 @@
-import { ObjectId } from "mongodb";
 export default class User {
   constructor(
-    username?: string,
+    public username?: string,
     email?: string,
-    password?: string,
+    public password?: string,
     first_name?: string,
     last_name?: string,
     age?: number,
@@ -13,7 +12,7 @@ export default class User {
     phone_number?: string,
     zip_code?: string,
     gender?: string,
-    date_of_birth?: string,
+    date_of_birt?: string,
     registration_date?: string,
     last_login?: string,
     subscription_status?: boolean,
@@ -21,9 +20,11 @@ export default class User {
     loyalty_points?: number,
     preferred_language?: string,
     newsletter_subscription?: boolean,
-    role?: string,
-    public id?: ObjectId,
-     public token?:string,
-    public exptokendate?:Date,
+    public role?: string,
+    public token?: string,
+    public exptokendate?: Date,
+    public managerUser?: string,
+    public managerUserName?: string,
+    public lstManagerUser?: string[]
   ) {}
 }

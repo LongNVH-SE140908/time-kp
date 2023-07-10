@@ -1,4 +1,4 @@
-import { Center, Text, Container, Heading, Button, Slide, Stack, Alert, VStack, HStack, IconButton, CloseIcon, useToast, Divider, Box, Accordion, useDisclose, FlatList, Actionsheet, Select } from "native-base";
+import { Center, Text, Container, Heading, Button, Slide, Stack, Alert, VStack, HStack, IconButton, CloseIcon, useToast, Divider, Box, Accordion, useDisclose, FlatList, Actionsheet, Select, ScrollView } from "native-base";
 import { StyleSheet, View, Image, Dimensions } from "react-native";
 import React, { useEffect, useState } from "react";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -17,7 +17,7 @@ export default function home() {
   useEffect(() => {
     async function fetchData() {
       var data = await getUserTimekeeping(user.token);
-
+      console.log(data);
       if (!data.isError) {
         setTimekp(data.data[0]);
       }
@@ -93,62 +93,66 @@ export default function home() {
     onOpen();
   }
   return (
-    <View style={styles.container}>
-      <Box>
-        <Heading>
-          <Ionicons size="xl" name="calendar-outline"></Ionicons>
-          <Text style={{ width: 500 }}>{currentDate}</Text>
-          <Divider my={6} />
-          <Center>
-            <View style={{ minWidth: 350, display: "flex", flexDirection: "column" }}>
-              <Button style={{ marginBottom: 10 }} onPress={checkin} size="md">
-                Checkin
-              </Button>
-              <Button onPress={checkout} size="md">
-                Checkout
-              </Button>
-            </View>
-          </Center>
-          <Divider my="6"></Divider>
-          <Text style={{ display: "flex", marginBottom: 10 }}>TimeKeeping History </Text>
-          {timekp.clock_time?.map((v, i) => {
-            {
-              return (
-                <View style={{ display: "flex", flexDirection: "column", marginBottom: 10 }} key={i}>
-                  <Button onPress={() => rederItem(v.info.detail)}>{v.date}</Button>
-                  <Actionsheet key={i} hideDragIndicator id={i} isOpen={isOpen} onClose={onClose}>
-                    <Actionsheet.Content>
-                      <Box w="100%" h={30} px={4} justifyContent="center">
-                        <Text
-                          fontSize="16"
-                          color="gray.500"
-                          _dark={{
-                            color: "gray.300",
-                          }}
-                        >
-                          {"Date " + v.date}
-                        </Text>
-                      </Box>
+    <ScrollView>
+      <View style={styles.container}>
+        <Box>
+          <Heading>
+            <Ionicons size="xl" name="calendar-outline"></Ionicons>
+            <Text style={{ width: 500 }}>{currentDate}</Text>
+            <Divider my={6} />
+            <Center>
+              <View style={{ minWidth: 350, display: "flex", flexDirection: "column" }}>
+                <Button style={{ marginBottom: 10 }} onPress={checkin} size="md">
+                  Checkin
+                </Button>
+                <Button onPress={checkout} size="md">
+                  Checkout
+                </Button>
+              </View>
+            </Center>
+            <Divider my="6"></Divider>
+            <Text style={{ display: "flex", marginBottom: 10 }}>TimeKeeping History </Text>
+            {Array.isArray(timekp.clock_time)
+              ? timekp.clock_time?.map((v, i) => {
+                  {
+                    return (
+                      <View style={{ display: "flex", flexDirection: "column", marginBottom: 10 }} key={i}>
+                        <Button onPress={() => rederItem(v.info.detail)}>{v.date}</Button>
+                        <Actionsheet key={i} hideDragIndicator id={i} isOpen={isOpen} onClose={onClose}>
+                          <Actionsheet.Content>
+                            <Box w="100%" h={30} px={4} justifyContent="center">
+                              <Text
+                                fontSize="16"
+                                color="gray.500"
+                                _dark={{
+                                  color: "gray.300",
+                                }}
+                              >
+                                {"Date " + v.date}
+                              </Text>
+                            </Box>
 
-                      {acctionSetItem?.map((va, it) => {
-                        return (
-                          <Actionsheet.Item>
-                            <Text style={{ width: "100%" }}>
-                              {new Date(va.check_in).toLocaleTimeString()} - {va.check_out == "" ?? new Date(va.check_out).toLocaleTimeString() == "" ? "No data" : new Date(va.check_out).toLocaleTimeString()} - Total Minute:{" "}
-                              {va.isValid ? va.total_minute + " (Valid)" : va.total_minute + " (Not Valid)"}
-                            </Text>
-                          </Actionsheet.Item>
-                        );
-                      })}
-                    </Actionsheet.Content>
-                  </Actionsheet>
-                </View>
-              );
-            }
-          })}
-        </Heading>
-      </Box>
-    </View>
+                            {acctionSetItem?.map((va, it) => {
+                              return (
+                                <Actionsheet.Item>
+                                  <Text style={{ width: "100%" }}>
+                                    {new Date(va.check_in).toLocaleTimeString()} - {va.check_out == "" ?? new Date(va.check_out).toLocaleTimeString() == "" ? "No data" : new Date(va.check_out).toLocaleTimeString()} - Total Minute:{" "}
+                                    {va.isValid ? va.total_minute + " (Valid)" : va.total_minute + " (Not Valid)"}
+                                  </Text>
+                                </Actionsheet.Item>
+                              );
+                            })}
+                          </Actionsheet.Content>
+                        </Actionsheet>
+                      </View>
+                    );
+                  }
+                })
+              : []}
+          </Heading>
+        </Box>
+      </View>
+    </ScrollView>
   );
 }
 const styles = StyleSheet.create({

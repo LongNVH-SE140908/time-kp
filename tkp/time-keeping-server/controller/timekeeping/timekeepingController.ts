@@ -3,9 +3,19 @@ import ReturnOj from "../../models/utils";
 import Enumerable from "linq";
 import { collections } from "../../services/database.service";
 export default async function getTimeKeeping(userName: string, role: string) {
-  let timekeeping: TimeKeeping[] = (await collections.timekeeping?.find({
-    user_name: userName
-  }).toArray()) as unknown as TimeKeeping[];
+  let timekeeping: TimeKeeping[] = (await collections.timekeeping
+    ?.find({
+      user_name: userName,
+    })
+    .toArray()) as unknown as TimeKeeping[];
+  return timekeeping;
+}
+export async function getAllTimeKeeping(userName: string[]) {
+  let timekeeping: TimeKeeping[] = (await collections.timekeeping
+    ?.find({
+      user_name: { $in: userName },
+    })
+    .toArray()) as unknown as TimeKeeping[];
   return timekeeping;
 }
 export async function timeKeepingCheckin(
@@ -155,7 +165,7 @@ export async function timeKeepingCheckOut(
 ): Promise<ReturnOj> {
   try {
     var isError = true;
-    var message = "Eror CheckOut"
+    var message = "Eror CheckOut";
     let ts = Date.now();
     let date_now: Date = new Date(ts);
     const year = date_now.getFullYear();
@@ -195,9 +205,6 @@ export async function timeKeepingCheckOut(
 
     //check xem co check out duoc khong
     timekeeping.clock_time.forEach((value, index) => {
-
-
-
       if (new Date(value.date).getTime() == new Date(ymd).getTime()) {
         //co cham cong hom nay roi
         // check xem check in co giong voi checkout khong
@@ -207,18 +214,17 @@ export async function timeKeepingCheckOut(
             // check xem da checkin chua
             if (v.check_out != "") {
               isError = true;
-              message = "Adready Checkout"
-
+              message = "Adready Checkout";
             } else {
               let tempdetail = timekeeping.clock_time[index].info.detail[i];
               tempdetail.check_out = date_now.toISOString();
               tempdetail.total_minute = new Date(
                 new Date(tempdetail.check_out).getTime() -
-                new Date(tempdetail.check_in).getTime()
+                  new Date(tempdetail.check_in).getTime()
               ).getMinutes();
               timekeeping.clock_time[index].info.detail[i] = tempdetail;
               isError = false;
-              message = "Checkout Success"
+              message = "Checkout Success";
               await collections.timekeeping
                 ?.updateOne(
                   { user_name: userName },
@@ -227,7 +233,6 @@ export async function timeKeepingCheckOut(
                 .catch((ms) => {
                   console.log(ms);
                 });
-
             }
           }
         });
@@ -242,4 +247,19 @@ export async function timeKeepingCheckOut(
 
     throw error;
   }
+}
+export async function timeKeppingUpdate(
+  username: string,
+  newdata: TimeKeeping
+) {
+  let resust = false;
+  await collections.timekeeping
+    ?.updateOne(
+      { user_name: username },
+      { $set: { clock_time: newdata.clock_time } }
+    )
+    .then((rs) => {
+      resust = true;
+    });
+  return resust;
 }

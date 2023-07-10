@@ -12,11 +12,15 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import { useRecoilState } from "recoil";
 import homeAdmin from "../../screens/home/homeAdmin";
 import { Text, useToast } from "native-base";
+import infoAdmin from "../../screens/info/infoAdmin";
+import manaUser from "../../screens/manaUser/manaUser";
+import manaVoucher from "../../screens/voucher/voucher";
 
 export default function authAdmin() {
   const toast = useToast();
   function logout() {
     localStorage.removeItem("userData");
+    localStorage.clear();
     navigation.navigate("Login");
     toast.show({
       title: "Logout Sucess",
@@ -32,11 +36,14 @@ export default function authAdmin() {
         screenOptions={({ route }) => ({
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
-            console.log(route.name);
             if (route.name === "Home") {
               iconName = focused ? "ios-information-circle" : "ios-information-circle-outline";
             } else if (route.name === "Info") {
               iconName = focused ? "ios-list" : "ios-list-outline";
+            } else if (route.name === "Voucher") {
+              iconName = focused ? "pricetags" : "pricetags-outline";
+            } else if (route.name === "User") {
+              iconName = focused ? "people" : "people-outline";
             }
 
             // You can return any component that you like here!
@@ -47,8 +54,9 @@ export default function authAdmin() {
         })}
       >
         <Tab.Screen name="Home" component={homeAdmin} />
-
-        <Tab.Screen name="Info" component={homeAdmin} />
+        <Tab.Screen name="User" component={manaUser} />
+        <Tab.Screen name="Voucher" component={manaVoucher} />
+        <Tab.Screen name="Info" component={infoAdmin} />
       </Tab.Navigator>
     </View>
   );

@@ -27,3 +27,24 @@ export default async function checkLoginUser(args: ReqUser) {
 
   return result;
 }
+
+export async function getAllUser(token: string) {
+  let result: User[] = [];
+  var URL: string;
+
+  URL = "http://localhost:8080/alluser/";
+  await axios
+    .get(URL, {
+      params: {
+        token: token,
+      },
+    })
+    .then(function (response) {
+      result = response.data;
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  return result;
+}
