@@ -10,25 +10,22 @@ export default async function getTimeKeeping(userName: string, role: string) {
     .toArray()) as unknown as TimeKeeping[];
   return timekeeping;
 }
+
 export async function getAllTimeKeeping(userName: string[]) {
   let timekeeping: TimeKeeping[] = (await collections.timekeeping
     ?.find({
       user_name: { $in: userName },
     })
     .toArray()) as unknown as TimeKeeping[];
-  return timekeeping;
-}
-
-export async function getAllTimeKeeping(userName: string[]) {
-  let timekeeping: TimeKeeping[] = (await collections.timekeeping?.find({
-    "user_name": { "$in": userName }
-  }).toArray()) as unknown as TimeKeeping[];
 
   console.log(timekeeping);
 
   return timekeeping;
 }
-export async function UpdateTimeKeeping(userName: string, newData: TimeKeeping) {
+export async function UpdateTimeKeeping(
+  userName: string,
+  newData: TimeKeeping
+) {
   console.log(newData.user_name);
 
   let isSuccess = await collections.timekeeping
@@ -41,8 +38,7 @@ export async function UpdateTimeKeeping(userName: string, newData: TimeKeeping) 
       console.log(ms);
     });
 
-
-  return isSuccess
+  return isSuccess;
 }
 export async function timeKeepingCheckin(
   userName?: string,
